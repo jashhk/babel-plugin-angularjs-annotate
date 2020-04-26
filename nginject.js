@@ -255,7 +255,7 @@ function inspectClassDeclaration(path, ctx){
 function inspectClassMethod(path, ctx){
   const node = path.node;
 
-  if(node.kind !== 'constructor'){
+  if (node.kind !== 'constructor' && !t.isClassMethod(node, {static: true})) {
     return;
   }
 
@@ -265,6 +265,11 @@ function inspectClassMethod(path, ctx){
     if(annotation === null) {
       return;
     }
+  }
+
+  if(t.isClassMethod(node, {static: true})) {
+    addSuspect(path, ctx, !annotation);
+    return;
   }
 
   const ancestry = path.getAncestry();

@@ -763,6 +763,19 @@ function judgeInjectArraySuspect(path, ctx) {
         opath = opath.parentPath;
     }
 
+    if (t.isClassMethod(node, {static: true})) {
+        declaratorName = t.memberExpression(
+            t.cloneNode(path.parentPath.parent.id),
+            node.key,
+            node.computed || t.isLiteral(node.key),
+        );
+
+        opath = opath.parentPath.parentPath;
+        if (t.isClassExpression(opath)) {
+            opath = opath.parentPath.parentPath;
+        }
+    }
+
     // suspect must be inside of a block or at the top-level (i.e. inside of node.$parent.body[])
     if (!node || !opath.parent || (!t.isProgram(opath.parent) && !t.isBlockStatement(opath.parent))) {
         return;
