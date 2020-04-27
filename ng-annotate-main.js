@@ -764,16 +764,24 @@ function judgeInjectArraySuspect(path, ctx) {
     }
 
     if (t.isClassMethod(node, {static: true})) {
-        declaratorName = t.memberExpression(
-            t.cloneNode(path.parentPath.parent.id),
-            node.key,
-            node.computed || t.isLiteral(node.key),
-        );
+        opath = opath.getStatementParent();
 
-        opath = opath.parentPath.parentPath;
-        if (t.isClassExpression(opath)) {
-            opath = opath.parentPath.parentPath;
+        let declarator;
+        if (t.isClass(opath) || t.isClassExpression(opath)) {
+            declarator = opath.node;
+        } else {
+            declarator = path.find(path => path.isVariableDeclarator()).node;
         }
+
+        if (!declarator.id) {
+            declarator.id = path.scope.generateUidIdentifier('ngInjectAnonymousClass');
+        }
+
+        declaratorName = t.memberExpression(
+          t.cloneNode(declarator.id),
+          node.key,
+          node.computed || t.isLiteral(node.key),
+        );
     }
 
     // suspect must be inside of a block or at the top-level (i.e. inside of node.$parent.body[])
@@ -790,6 +798,8 @@ function judgeInjectArraySuspect(path, ctx) {
         }
         declaratorName = node.id.name;
         node = getConstructor(node);
+    } else if (t.isAssignmentExpression(node) && t.isClassExpression(node.right)) {
+        node = getConstructor(node.right);
     }
 
     if (isFunctionExpressionWithArgs(node) || t.isClassMethod(node)) {

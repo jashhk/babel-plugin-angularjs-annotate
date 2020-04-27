@@ -168,6 +168,29 @@ module.exports = {
   `
   },
   {
+    name: "class assigned to a variable in assignment expression",
+    explicit: true,
+    noES5: true,
+    input: `
+      let Foo_1;
+      let Foo = Foo_1 = class Foo {
+        constructor($element) {
+          'ngInject';
+        }
+      };
+    `,
+    expected: `
+      let Foo_1;
+      let Foo = Foo_1 = class Foo {
+        constructor($element) {
+          'ngInject';
+        }
+      };
+
+      Foo.$inject = ["$element"];
+    `
+  },
+  {
     name: "static methods in a class",
     explicit: true,
     noES5: true,
@@ -208,6 +231,29 @@ module.exports = {
 
     Foo.config.$inject = ["$element"];
   `
+  },
+  {
+    name: "static methods in a class assigned to a variable in assignment expression",
+    explicit: true,
+    noES5: true,
+    input: `
+      let Foo_1;
+      let Foo = Foo_1 = class Foo {
+        static config($element) {
+          'ngInject';
+        }
+      };
+    `,
+    expected: `
+      let Foo_1;
+      let Foo = Foo_1 = class Foo {
+        static config($element) {
+          'ngInject';
+        }
+      };
+
+      Foo.config.$inject = ["$element"];
+    `
   },
   {
     name: "annotated constructor",
